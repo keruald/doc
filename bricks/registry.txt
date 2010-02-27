@@ -1,0 +1,54 @@
+/*
+ * Keruald, core libraries for Pluton and Xen engines.
+ * (c) 2010, Sébastien Santoro aka Dereckson, some rights reserved
+ * Released under BSD license
+ *
+ * How to add a global registry?
+ */
+
+//
+// i. add the following options in includes/config.php:
+//
+
+define('TABLE_REGISTRY', $prefix . 'registry');
+
+//
+// ii. add the following code in includes/core.php:
+//
+
+////////////////////////////////////////////////////////////////////////////////
+///                                                                          ///
+/// Registry functions                                                       ///
+///                                                                          ///
+////////////////////////////////////////////////////////////////////////////////
+
+function registry_get ($key) {
+    global $db;
+    
+    $key = $db->sql_escape($key);
+    $sql = "SELECT registry_value FROM " . TABLE_REGISTRY . " WHERE registry_key = '$key'";
+	if (!$result = $db->sql_query($sql)) message_die(SQL_ERROR, "Can't read registry.", '', __LINE__, __FILE__, $sql);
+    $row = $db->sql_fetchrow($result);
+	return $row['registry_value'];
+}
+
+function registry_set ($key, $value) {
+    global $db;
+    
+    $key = $db->sql_escape($key);
+    $value = $db->sql_escape($value);
+    $sql = "REPLACE INTO " . TABLE_REGISTRY . " (registry_key, registry_value) VALUES ('$key', '$value')";
+    if (!$db->sql_query($sql))
+        message_die(SQL_ERROR, "Can't update registry", '', __LINE__, __FILE__, $sql);
+}
+
+//
+// iii. create the following registry table:
+//
+
+CREATE TABLE IF NOT EXISTS `registry` (
+  `registry_key` varchar(63) NOT NULL,
+  `registry_value` longtext NOT NULL,
+  `registry_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`registry_key`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;

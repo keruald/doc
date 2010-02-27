@@ -1,0 +1,3 @@
+Variables       camelCase (or CamelCase for global ones used in all application)
+Class names     CamelCase
+functions       use_underscore

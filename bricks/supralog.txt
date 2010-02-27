@@ -1,0 +1,45 @@
+/*
+ * Keruald, core libraries for Pluton and Xen engines.
+ * (c) 2010, Sébastien Santoro aka Dereckson, some rights reserved
+ * Released under BSD license
+ *
+ * How to add MySQL-based logging facility?
+ *
+ * Before implement this recipe, please consider the very great and flexible
+ * Apache logging library.
+ *
+ */
+
+//
+// i. add the following options in includes/config.php:
+//
+
+define('TABLE_LOG', $prefix . 'supralog');
+
+//
+// ii. add the following code in includes/core.php:
+//
+
+/*
+ * Inserts a message into the supralog
+ * @param string $category the entry category
+ * @param string $message the message to log
+ * @param string $source the entry source.
+ */
+function supralog ($category, $message, $source = null) {
+    global $db, $session, $CurrentUser;
+    $category = $db->sql_escape($category);
+    $message  = $db->sql_escape($message);
+    $source   = $db->sql_escape($source ? $source : $_SERVER['SERVER_ADDR']);
+    $ip = $session->ip;
+	$sql = "INSERT INTO " . TABLE_LOG .
+           " (entry_ip, user_id, entry_category, entry_message, entry_source) VALUES 
+             ('$ip', $CurrentUser->id, '$category', '$message', '$source')";
+	if ( !($result = $db->sql_query($sql)) )
+		message_die(SQL_ERROR, "Can't log this entry.", '', __LINE__, __FILE__, $sql);
+}
+
+//
+// iii. create the following registry table:
+//
+
